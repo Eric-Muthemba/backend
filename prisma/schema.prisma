@@ -1,0 +1,113 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = "postgresql://postgres:postgres@localhost:5432/postgres?schema=sample"
+}
+
+enum Role {
+  DOCTOR
+  ADMIN
+  NURSE
+  CASHIER
+  PHARMACIST
+  LABTECH
+}
+
+model User {
+  id            String   @id @default(uuid())
+  name          String
+  email         String   @unique
+  phone_number  String
+  password      String
+  roles         Role[]   @default([PHARMACIST])
+  prescriptions Prescription[]
+  patients Patient[]
+  drugs Drug[]
+  medical_records MedicalRecord[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Patient {
+  id              String              @id @default(uuid())
+  firstName       String
+  lastName        String
+  dob             DateTime
+  gender          String
+  address         String?
+  phone           String?
+  createdBy       User             @relation(fields: [createdById], references: [id])
+  createdById     String
+  isDeleted       Boolean          @default(false)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  medicalRecords  MedicalRecord[]
+}
+
+model MedicalRecord {
+  id         String       @id @default(uuid())
+  patient    Patient   @relation(fields: [patientId], references: [id])
+  patientId  String
+  notes      String
+  date       DateTime
+  prescriptions Prescription[]
+  createdBy       User             @relation(fields: [createdById], references: [id])
+  createdById     String
+  isDeleted       Boolean          @default(false)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+}
+
+model Prescription {
+  id            String            @id @default(uuid())
+  medicalRecord MedicalRecord  @relation(fields: [medicalRecordId], references: [id])
+  medicalRecordId String
+  prescriptionDrugs PrescriptionDrug[]
+  payments      Payment[]
+  createdBy       User             @relation(fields: [createdById], references: [id])
+  createdById     String
+  isDeleted       Boolean          @default(false)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+}
+
+model Drug {
+  id         String       @id @default(uuid())
+  name       String
+  description String?
+  quantity   Int
+  price   Float
+  createdBy       User             @relation(fields: [createdById], references: [id])
+  createdById     String
+  isDeleted       Boolean          @default(false)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  prescriptionDrugs PrescriptionDrug[]
+}
+
+
+model PrescriptionDrug {
+  id            String              @id @default(uuid())
+  prescription  Prescription     @relation(fields: [prescriptionId], references: [id])
+  prescriptionId String
+  drug          Drug             @relation(fields: [drugId], references: [id])
+  drugId        String
+  quantity      Int
+  sellingPrice  Float
+  note          String
+
+}
+
+model Payment {
+  id            String           @id @default(uuid())
+  prescription  Prescription  @relation(fields: [prescriptionId], references: [id])
+  prescriptionId String
+  amount        Float
+  date          DateTime
+  method        String        // Payment method (e.g., 'credit card', 'cash')
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
