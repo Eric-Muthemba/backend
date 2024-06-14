@@ -16,9 +16,11 @@ Welcome to Eric Muthemba Kiarie, Ilara health backend case study submission.
 - Update `.env`: Fill in necessary environment variables
 
 ### Step 3: 🏃‍♂️ Running the Project
-
+- run migrations : `npx prisma migrate dev --name init`
 - cd into src: `cd src `
-- seed the database: `node seed.js && cd .. `
+- seed the database with users: `node seed.js && cd .. `
 - Development Mode: `npm run dev`
 - Building: `npm run build`
 - Production Mode: Set `.env` to `NODE_ENV="production"` then `npm run build && npm run start`
+
+
