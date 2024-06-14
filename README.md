@@ -17,6 +17,7 @@ Welcome to Eric Muthemba Kiarie, Ilara health backend case study submission.
 
 ### Step 3: 🏃‍♂️ Running the Project
 
+- seed the database: `cd src && node seed.js && cd ..`
 - Development Mode: `npm run dev`
 - Building: `npm run build`
 - Production Mode: Set `.env` to `NODE_ENV="production"` then `npm run build && npm run start`
