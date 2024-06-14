@@ -4,7 +4,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = "postgresql://postgres:postgres@localhost:5432/postgres?schema=sample"
+  url      = env("DATABASE_URL")
 }
 
 enum Role {
@@ -15,6 +15,18 @@ enum Role {
   PHARMACIST
   LABTECH
 }
+
+enum PaymentMethods {
+  MPESA
+  CARD
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  CANCELLED
+}
+
 
 model User {
   id            String   @id @default(uuid())
@@ -66,7 +78,7 @@ model Prescription {
   medicalRecord MedicalRecord  @relation(fields: [medicalRecordId], references: [id])
   medicalRecordId String
   prescriptionDrugs PrescriptionDrug[]
-  payments      Payment[]
+  PrescriptionPayments      PrescriptionPayments[]
   createdBy       User             @relation(fields: [createdById], references: [id])
   createdById     String
   isDeleted       Boolean          @default(false)
@@ -98,16 +110,26 @@ model PrescriptionDrug {
   quantity      Int
   sellingPrice  Float
   note          String
-
 }
 
 model Payment {
   id            String           @id @default(uuid())
-  prescription  Prescription  @relation(fields: [prescriptionId], references: [id])
-  prescriptionId String
   amount        Float
-  date          DateTime
-  method        String        // Payment method (e.g., 'credit card', 'cash')
+  method        PaymentMethods   @default(MPESA)
+  status        PaymentStatus   @default(PENDING)
+  description        String   @default("-")
+  reference     String?        @unique
+  checkout_id     String      @default("-")
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
+  PrescriptionPayments      PrescriptionPayments[]
+}
+
+
+model PrescriptionPayments {
+    id            String           @id @default(uuid())
+    prescription  Prescription     @relation(fields: [prescriptionId], references: [id])
+    prescriptionId String
+    payment  Payment     @relation(fields: [paymentId], references: [id])
+    paymentId String
 }

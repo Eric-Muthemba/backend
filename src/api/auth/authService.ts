@@ -1,10 +1,9 @@
 import { compareSync } from 'bcrypt';
 import { StatusCodes } from 'http-status-codes';
 
-import { Auth } from '@/api/auth/authSchema';
 import { authRepository } from '@/api/auth/authRepository';
+import { Auth } from '@/api/auth/authSchema';
 import { ResponseStatus, ServiceResponse } from '@/common/models/serviceResponse';
-import { logger } from '@/server';
 
 export const authService = {
   login: async (email: string, password: string): Promise<ServiceResponse<Auth | null>> => {

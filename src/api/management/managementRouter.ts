@@ -1,17 +1,11 @@
 import { OpenAPIRegistry } from '@asteasolutions/zod-to-openapi';
 import express, { Request, Response, Router } from 'express';
-import { z } from 'zod';
 
-import {
-  createUserResponseSchema,
-  createUserSchema,
-  GetmanagementSchema,
-  UserSchema,
-} from '@/api/management/managementSchema';
+import { createUserResponseSchema, createUserSchema, UserSchema } from '@/api/management/managementSchema';
 import { managementService } from '@/api/management/managementService';
 import { createApiResponse } from '@/api-docs/openAPIResponseBuilders';
 import { authorize } from '@/common/middleware/authMiddleware';
-import { handleServiceResponse, validateRequest } from '@/common/utils/httpHandlers';
+import { handleServiceResponse } from '@/common/utils/httpHandlers';
 
 export const managementRegistry = new OpenAPIRegistry();
 
@@ -26,23 +20,21 @@ export const managementRouter: Router = (() => {
   const router = express.Router();
   managementRegistry.registerPath({
     method: 'get',
-    path: '/management/me',
+    path: '/management/users',
     tags: ['management'],
     request: {},
     security: [{ [bearerAuth.name]: [] }],
     responses: createApiResponse(UserSchema, 'Success'),
   });
 
-  router.get('/me', async (req: Request, res: Response) => {
-    const userId = req.user._id;
-    console.log(userId);
-    const serviceResponse = await managementService.findById(userId);
+  router.get('/users', async (req: Request, res: Response) => {
+    const serviceResponse = await managementService.findAll();
     handleServiceResponse(serviceResponse, res);
   });
 
   managementRegistry.registerPath({
     method: 'post',
-    path: '/management/invitation',
+    path: '/management/users',
     request: {
       body: {
         content: {
@@ -57,7 +49,7 @@ export const managementRouter: Router = (() => {
     responses: createApiResponse(createUserResponseSchema, 'Success'),
   });
 
-  router.post('/invitation', authorize(['ADMIN']), async (req: Request, res: Response) => {
+  router.post('/users', authorize(['ADMIN']), async (req: Request, res: Response) => {
     const { name, email, phone_number, roles } = req.body;
     const serviceResponse = await managementService.create(name, email, phone_number, roles);
     handleServiceResponse(serviceResponse, res);

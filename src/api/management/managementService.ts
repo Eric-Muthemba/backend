@@ -1,10 +1,8 @@
-import { compareSync } from 'bcrypt';
 import { StatusCodes } from 'http-status-codes';
 
 import { managementRepository } from '@/api/management/managementRepository';
 import { management } from '@/api/management/managementSchema';
 import { ResponseStatus, ServiceResponse } from '@/common/models/serviceResponse';
-import { logger } from '@/server';
 
 export const managementService = {
   create: async (
@@ -26,20 +24,15 @@ export const managementService = {
     }
   },
 
-  findById: async (id: string): Promise<ServiceResponse<management | null>> => {
+  findAll: async (): Promise<ServiceResponse<management | null>> => {
     try {
-      const user = await managementRepository.findByIdAsync(id);
-      if (!user) {
-        return new ServiceResponse<management>(
-          ResponseStatus.Success,
-          `No user with id ${id} found`,
-          [],
-          StatusCodes.NOT_FOUND
-        );
+      const users = await managementRepository.findAllAsync();
+      if (!users || !users.length) {
+        return new ServiceResponse<management>(ResponseStatus.Success, `No user found`, [], StatusCodes.NOT_FOUND);
       }
-      return new ServiceResponse<management>(ResponseStatus.Success, 'me', user, StatusCodes.OK);
+      return new ServiceResponse<management>(ResponseStatus.Success, 'users', users, StatusCodes.OK);
     } catch (ex) {
-      const errorMessage = `Error finding user with id ${id}:, ${(ex as Error).message}`;
+      const errorMessage = `Error finding users :, ${(ex as Error).message}`;
       return new ServiceResponse(ResponseStatus.Failed, errorMessage, null, StatusCodes.INTERNAL_SERVER_ERROR);
     }
   },

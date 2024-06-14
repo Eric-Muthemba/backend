@@ -7,6 +7,7 @@ import { recordRegistry } from '@/api/medicalRecords/recordRouter';
 import { patientRegistry } from '@/api/patients/patientRouter';
 import { prescriptionRegistry } from '@/api/prescriptions/prescriptionRouter';
 import { managementRegistry } from '@/api/management/managementRouter';
+import { transactionsRegistry } from "@/api/transactions/transactionsRouter";
 
 export function generateOpenAPIDocument() {
   const registry = new OpenAPIRegistry([
@@ -17,6 +18,7 @@ export function generateOpenAPIDocument() {
     prescriptionRegistry,
     inventoryRegistry,
     managementRegistry,
+    transactionsRegistry,
   ]);
   const generator = new OpenApiGeneratorV3(registry.definitions);
 

@@ -28,6 +28,3 @@ export const createUserResponseSchema = z.object({
   phone_number: z.string(),
 });
 
-export const GetmanagementSchema = z.object({
-  params: z.object({ id: commonValidations.id }),
-});

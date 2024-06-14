@@ -1,9 +1,7 @@
 import { User } from '@prisma/client'; // Import User model if using TypeScript
 import { hashSync } from 'bcrypt';
-import * as jwt from 'jsonwebtoken';
 import randomstring from 'randomstring';
 
-import { env } from '@/common/utils/envConfig'; // Ensure prismaClient is correctly imported
 import { sendMail } from '@/common/utils/send_emails';
 import { prismaClient } from '@/server';
 
@@ -11,8 +9,8 @@ export const managementRepository = {
   findFirstAsync: async (email: string): Promise<User | null> => {
     return await prismaClient.user.findFirst({ where: { email } });
   },
-  findByIdAsync: async (id: string): Promise<User | null> => {
-    return await prismaClient.user.findUnique({ where: { id } });
+  findAllAsync: async (): Promise<User[] | null> => {
+    return await prismaClient.user.findMany();
   },
   createAsync: async (name: string, email: string, phone_number: string, roles: any): Promise<User | null> => {
     const password: string = randomstring.generate({ charset: ['alphanumeric'], length: 8 });
@@ -33,9 +31,5 @@ export const managementRepository = {
     );
 
     return user;
-  },
-  loginAsync: async (user_id: string): Promise<string | null> => {
-    const token = jwt.sign({ userId: user_id }, env.JWT_SECRET);
-    return token;
   },
 };

@@ -14,4 +14,11 @@ export const env = cleanEnv(process.env, {
   MAIL_HOST: str({ devDefault: testOnly('gmail') }),
   MAIL_USERNAME: str({ devDefault: testOnly('testemailforinterviews@gmail.com') }),
   MAIL_PASSWORD: str({ devDefault: testOnly('testemailforinterviewspassword') }),
+
+  MPESA_CONSUMER_SECRET: str({ devDefault: testOnly('xxxxxx') }),
+  MPESA_CONSUMER_KEY: str({ devDefault: testOnly('xxxxxx') }),
+  MPESA_PASS_KEY: str({ devDefault: testOnly('xxxxxx') }),
+  MPESA_BUSINESS_SHORT_CODE: str({ devDefault: testOnly('xxxxxx') }),
+  CALLBACK_URL: str({ devDefault: testOnly('http://example.com') }),
+
 });

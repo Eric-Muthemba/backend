@@ -1,0 +1,26 @@
+[
+  {
+    "id": "a1b2c3d4-e5f6-7g8h-9i0j-k1l2m3n4o5p9",
+    "name": "Eric Muthemba Kiarie",
+    "email": "admin@example.com",
+    "phone_number": "0712345678",
+    "password": "12345678",
+    "roles": ["ADMIN"],
+    "prescriptions": [],
+    "patients": [],
+    "drugs": [],
+    "medical_records": []
+  },
+  {
+    "id": "z9y8x7w6-v5u4-t3s2-r1q0-p9o8n7m6l5k4",
+    "name": "Jane Smith",
+    "email": "jane.smith@example.com",
+    "phone_number": "0712345678",
+    "password": "12345678",
+    "roles": ["PHARMACIST"],
+    "prescriptions": [],
+    "patients": [],
+    "drugs": [],
+    "medical_records": []
+  }
+]

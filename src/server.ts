@@ -7,10 +7,11 @@ import { pino } from 'pino';
 import { authRouter } from '@/api/auth/authRouter';
 import { healthCheckRouter } from '@/api/healthCheck/healthCheckRouter';
 import { inventoryRouter } from '@/api/inventory/inventoryRouter';
+import { managementRouter } from '@/api/management/managementRouter';
 import { recordRouter } from '@/api/medicalRecords/recordRouter';
 import { patientRouter } from '@/api/patients/patientRouter';
 import { prescriptionRouter } from '@/api/prescriptions/prescriptionRouter';
-import { managementRouter } from '@/api/management/managementRouter';
+import { transactionsRouter } from '@/api/transactions/transactionsRouter';
 import { openAPIRouter } from '@/api-docs/openAPIRouter';
 import { authenticate } from '@/common/middleware/authMiddleware';
 import errorHandler from '@/common/middleware/errorHandler';
@@ -25,7 +26,7 @@ const app: Express = express();
 app.set('trust proxy', true);
 
 // Middlewares
-app.use(cors({ origin: env.CORS_ORIGIN, credentials: true, methods: ['GET', 'POST', 'PUT', 'DELETE']}));
+app.use(cors({ origin: env.CORS_ORIGIN, credentials: true, methods: ['GET', 'POST', 'PUT', 'DELETE'] }));
 app.use(helmet());
 app.use(rateLimiter);
 app.use(express.json());
@@ -41,7 +42,7 @@ app.use('/medical_records', authenticate, recordRouter);
 app.use('/inventory', authenticate, inventoryRouter);
 app.use('/prescriptions', authenticate, prescriptionRouter);
 app.use('/management', authenticate, managementRouter);
-
+app.use('/transactions', transactionsRouter);
 
 // Swagger UI
 app.use(openAPIRouter);

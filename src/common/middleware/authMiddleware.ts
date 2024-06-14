@@ -1,10 +1,10 @@
 import { NextFunction, Request, Response } from 'express';
 import jwt, { JwtPayload } from 'jsonwebtoken';
-import { string } from 'zod';
 
 import { env } from '@/common/utils/envConfig'; // Ensure prismaClient is correctly imported
+import { UserRequest } from '@/common/utils/interfaces';
 
-const authenticate = (req: Request, res: Response, next: NextFunction) => {
+const authenticate = (req: UserRequest, res: Response, next: NextFunction) => {
   try {
     const token = req.headers.authorization;
     if (!token) {
@@ -25,7 +25,7 @@ const authenticate = (req: Request, res: Response, next: NextFunction) => {
 };
 
 const authorize = (allowedRoles: string[]) => {
-  return (req: Request, res: Response, next: NextFunction) => {
+  return (req: UserRequest, res: Response, next: NextFunction) => {
     const userRoles = req.user?.roles;
 
     if (!userRoles || !userRoles.some((role: string) => allowedRoles.includes(role))) {

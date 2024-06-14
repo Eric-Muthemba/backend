@@ -1,10 +1,11 @@
-import { Prescription, prescriptionDrugs } from '@prisma/client'; // Import User model if using TypeScript
+import { Prescription } from '@prisma/client';
 
 import { prismaClient } from '@/server';
 
 export const prescriptionRepository = {
-  findAllAsync: async (id: string, medical_record_id: string): Promise<Prescription[]> => {
+  findAllAsync: async (id?: string, medical_record_id?: string): Promise<Prescription[]> => {
     let prescriptions;
+
     if (id && medical_record_id) {
       prescriptions = await prismaClient.prescription.findMany({
         where: {
@@ -56,11 +57,13 @@ export const prescriptionRepository = {
         },
       });
     }
-    return prescriptions;
+
+    return [] || prescriptions;
   },
-  updateByIdAsync: async (id: string, action: string, createdById: string, drugs: any): Promise<Prescription[]> => {
+
+  updateByIdAsync: async (id: string, action: string, createdById: string, drugs: any): Promise<void> => {
     if (action === 'delete') {
-      const prescription_drugs_ids = drugs.map(({ id }) => id);
+      const prescription_drugs_ids = drugs.map((pd: any) => pd.id);
       await prismaClient.prescriptionDrug.deleteMany({
         where: {
           prescriptionId: id,
@@ -68,23 +71,24 @@ export const prescriptionRepository = {
         },
       });
     } else if (action === 'add') {
-       await prismaClient.PrescriptionDrug.createMany({
-        data: drugs.map((pd) => ({
-            prescriptionId: id,
-            drugId: pd.id,
-            quantity: pd.quantity,
-            sellingPrice: pd.price,
-            note: pd.note,
-          })),
-        })
+      await prismaClient.prescriptionDrug.createMany({
+        data: drugs.map((pd: any) => ({
+          prescriptionId: id,
+          drugId: pd.id,
+          quantity: pd.quantity,
+          sellingPrice: pd.price,
+          note: pd.note,
+        })),
+      });
     }
   },
+
   createAsync: async (createdById: string, medicalRecordId: string, drugs: any): Promise<Prescription | null> => {
-    return await prismaClient.prescription.create({
+    const prescription = await prismaClient.prescription.create({
       data: {
-        medicalRecordId,
+        medicalRecordId: medicalRecordId,
         prescriptionDrugs: {
-          create: drugs.map((pd) => ({
+          create: drugs.map((pd: any) => ({
             drugId: pd.id,
             quantity: pd.quantity,
             sellingPrice: pd.price,
@@ -93,6 +97,30 @@ export const prescriptionRepository = {
         },
         createdById,
       },
+      include: {
+        prescriptionDrugs: {
+          include: {
+            drug: true,
+          },
+        },
+      },
     });
+
+    return prescription;
+  },
+
+  findUniqueAsync: async (prescriptionId: string): Promise<Prescription | null> => {
+    const prescription = await prismaClient.prescription.findUnique({
+      where: { id: prescriptionId },
+      include: {
+        prescriptionDrugs: {
+          include: {
+            drug: true,
+          },
+        },
+      },
+    });
+
+    return prescription;
   },
 };

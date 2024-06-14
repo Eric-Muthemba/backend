@@ -1,10 +1,9 @@
-import { Inventory } from '@prisma/client'; // Import User model if using TypeScript
-import { string } from 'zod';
+import { Drug } from '@prisma/client'; // Import User model if using TypeScript
 
 import { prismaClient } from '@/server';
 
 export const inventoryRepository = {
-  findAllAsync: async (id: string, name: string): Promise<Inventory[]> => {
+  findAllAsync: async (id: string, name: string): Promise<Drug[] | Drug | null> => {
     if (id && name) {
       return await prismaClient.drug.findMany({
         where: {
@@ -13,7 +12,7 @@ export const inventoryRepository = {
         },
       });
     } else if (id) {
-      return await prismaClient.drug.findUnique({
+      return await prismaClient.drug.findMany({
         where: {
           id: id,
         },
@@ -34,7 +33,7 @@ export const inventoryRepository = {
     quantity: number,
     createdById: string,
     price: number
-  ): Promise<Inventory | null> => {
+  ): Promise<Drug | null> => {
     return await prismaClient.drug.create({
       data: { name: name, description: description, quantity: quantity, createdById: createdById, price: price },
     });
@@ -45,7 +44,7 @@ export const inventoryRepository = {
     quantity: number,
     price: number,
     drugId: string
-  ): Promise<Inventory | null> => {
+  ): Promise<Drug | null> => {
     return prismaClient.drug.update({
       where: { id: drugId },
       data: { name, description, quantity, price },

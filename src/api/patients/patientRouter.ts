@@ -2,11 +2,11 @@ import { OpenAPIRegistry } from '@asteasolutions/zod-to-openapi';
 import express, { Request, Response, Router } from 'express';
 import { z } from 'zod';
 
-import { GetRecordSchema } from '@/api/medicalRecords/recordsSchema';
 import { GetPatientSchema, PatientSchema, updatePatientRequestSchema } from '@/api/patients/patientSchema';
 import { patientService } from '@/api/patients/patientService';
 import { createApiResponse } from '@/api-docs/openAPIResponseBuilders';
 import { handleServiceResponse, validateRequest } from '@/common/utils/httpHandlers';
+import { UserRequest } from '@/common/utils/interfaces';
 
 export const patientRegistry = new OpenAPIRegistry();
 
@@ -52,8 +52,8 @@ export const patientRouter: Router = (() => {
     responses: createApiResponse(PatientSchema, 'Success'),
   });
 
-  router.post('/', async (req: Request, res: Response) => {
-    const createdById = req.user._id;
+  router.post('/', async (req: UserRequest, res: Response) => {
+    const createdById = req.user?._id;
     const { firstName, lastName, DOB, gender, address, phone } = req.body;
     const serviceResponse = await patientService.create(firstName, lastName, DOB, gender, address, phone, createdById);
     handleServiceResponse(serviceResponse, res);

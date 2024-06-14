@@ -5,8 +5,8 @@ import { z } from 'zod';
 import { recordService } from '@/api/medicalRecords/recordService';
 import { GetRecordSchema, RecordSchema, updateRecordRequestSchema } from '@/api/medicalRecords/recordsSchema';
 import { createApiResponse } from '@/api-docs/openAPIResponseBuilders';
-import { handleServiceResponse, validateRequest } from '@/common/utils/httpHandlers';
-import {PatientSchema} from "@/api/patients/patientSchema";
+import { handleServiceResponse } from '@/common/utils/httpHandlers';
+import { UserRequest } from '@/common/utils/interfaces';
 
 export const recordRegistry = new OpenAPIRegistry();
 
@@ -17,9 +17,11 @@ const bearerAuth = recordRegistry.registerComponent('securitySchemes', 'bearerAu
   scheme: 'bearer',
   bearerFormat: 'JWT',
 });
+
 export const recordRouter: Router = (() => {
   const router = express.Router();
 
+  // GET /medical_records
   recordRegistry.registerPath({
     method: 'get',
     path: '/medical_records',
@@ -29,12 +31,13 @@ export const recordRouter: Router = (() => {
     responses: createApiResponse(z.array(RecordSchema), 'Success'),
   });
 
-  router.get('/', async (_req: Request, res: Response) => {
-    const { id, patientId } = _req.query;
+  router.get('/', async (req: Request, res: Response) => {
+    const { id, patientId } = req.query as { id?: string; patientId?: string };
     const serviceResponse = await recordService.findAll(id, patientId);
     handleServiceResponse(serviceResponse, res);
   });
 
+  // POST /medical_records/:patient_id
   recordRegistry.registerPath({
     method: 'post',
     path: '/medical_records/{patient_id}',
@@ -50,19 +53,19 @@ export const recordRouter: Router = (() => {
     },
     security: [{ [bearerAuth.name]: [] }],
     tags: ['Medical record'],
-    responses: createApiResponse(z.array(RecordSchema), 'Success'),
+    responses: createApiResponse(RecordSchema, 'Success'),
   });
 
-  router.post('/:patient_id', async (_req: Request, res: Response) => {
-    const { notes } = _req.body;
-    const patientId = _req.params.patient_id as string;
-    const createdById = _req.user._id;
+  router.post('/:patient_id', async (req: UserRequest, res: Response) => {
+    const { notes } = req.body as { notes: string };
+    const { patient_id } = req.params;
+    const createdById = req.user?._id;
 
-
-    const serviceResponse = await recordService.create(notes, patientId, createdById);
+    const serviceResponse = await recordService.create(notes, patient_id, createdById);
     handleServiceResponse(serviceResponse, res);
   });
 
+  // PUT /medical_records/:id
   recordRegistry.registerPath({
     method: 'put',
     path: '/medical_records/{id}',
@@ -78,16 +81,17 @@ export const recordRouter: Router = (() => {
     },
     security: [{ [bearerAuth.name]: [] }],
     tags: ['Medical record'],
-    responses: createApiResponse(z.array(RecordSchema), 'Success'),
+    responses: createApiResponse(RecordSchema, 'Success'),
   });
 
   router.put('/:id', async (req: Request, res: Response) => {
-    const id = req.params.id as string;
+    const { id } = req.params;
     const parsedData = updateRecordRequestSchema.parse(req.body);
-    const serviceResponse = await recordService.UpdateById(id, parsedData);
+    const serviceResponse = await recordService.updateById(id, parsedData);
     handleServiceResponse(serviceResponse, res);
   });
 
+  // DELETE /medical_records/:id
   recordRegistry.registerPath({
     method: 'delete',
     path: '/medical_records/{id}',
@@ -96,11 +100,11 @@ export const recordRouter: Router = (() => {
     },
     security: [{ [bearerAuth.name]: [] }],
     tags: ['Medical record'],
-    responses: createApiResponse(z.array(RecordSchema), 'Success'),
+    responses: createApiResponse(RecordSchema, 'Success'),
   });
 
-  router.delete('/:id', async (_req: Request, res: Response) => {
-    const id = _req.params.id as string;
+  router.delete('/:id', async (req: Request, res: Response) => {
+    const { id } = req.params;
     const serviceResponse = await recordService.deleteById(id);
     handleServiceResponse(serviceResponse, res);
   });

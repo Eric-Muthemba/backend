@@ -2,7 +2,6 @@ import { OpenAPIRegistry } from '@asteasolutions/zod-to-openapi';
 import express, { Request, Response, Router } from 'express';
 import { z } from 'zod';
 
-import { patientRegistry } from '@/api/patients/patientRouter';
 import {
   CreatePrescriptionSchema,
   GetPrescriptionSchema,
@@ -12,6 +11,7 @@ import {
 import { prescriptionService } from '@/api/prescriptions/prescriptionService';
 import { createApiResponse } from '@/api-docs/openAPIResponseBuilders';
 import { handleServiceResponse, validateRequest } from '@/common/utils/httpHandlers';
+import { UserRequest } from '@/common/utils/interfaces';
 
 export const prescriptionRegistry = new OpenAPIRegistry();
 
@@ -34,7 +34,7 @@ export const prescriptionRouter: Router = (() => {
   });
 
   router.get('/', async (req: Request, res: Response) => {
-    const { id, medical_record_id } = req.query;
+    const { id, medical_record_id } = req.query as { id?: string; medical_record_id?: string };
     const serviceResponse = await prescriptionService.findAll(id, medical_record_id);
     handleServiceResponse(serviceResponse, res);
   });
@@ -57,13 +57,17 @@ export const prescriptionRouter: Router = (() => {
     responses: createApiResponse(PrescriptionSchema, 'Success'),
   });
 
-  router.post('/:medical_record_id', validateRequest(CreatePrescriptionSchema), async (req: Request, res: Response) => {
-    const { drugs } = req.body;
-    const createdById = req.user._id;
-    const medicalRecordId = req.params.medical_record_id as string;
-    const serviceResponse = await prescriptionService.create(createdById, medicalRecordId, drugs);
-    handleServiceResponse(serviceResponse, res);
-  });
+  router.post(
+    '/:medical_record_id',
+    validateRequest(CreatePrescriptionSchema),
+    async (req: UserRequest, res: Response) => {
+      const { drugs } = req.body;
+      const createdById = req.user?._id;
+      const medicalRecordId = req.params.medical_record_id as string;
+      const serviceResponse = await prescriptionService.create(createdById, medicalRecordId, drugs);
+      handleServiceResponse(serviceResponse, res);
+    }
+  );
 
   prescriptionRegistry.registerPath({
     method: 'put',
@@ -83,10 +87,10 @@ export const prescriptionRouter: Router = (() => {
     responses: createApiResponse(PrescriptionSchema, 'Success'),
   });
 
-  router.put('/:id/:action', validateRequest(GetPrescriptionSchema), async (req: Request, res: Response) => {
+  router.put('/:id/:action', validateRequest(GetPrescriptionSchema), async (req: UserRequest, res: Response) => {
     const id = req.params.id as string;
     const action = req.params.action as string;
-    const createdById = req.user._id;
+    const createdById = req.user?._id;
 
     const { drugs } = req.body;
 
@@ -94,18 +98,5 @@ export const prescriptionRouter: Router = (() => {
     handleServiceResponse(serviceResponse, res);
   });
 
-  prescriptionRegistry.registerPath({
-    method: 'delete',
-    path: '/prescriptions/{id}',
-    tags: ['Prescription'],
-    request: { params: GetPrescriptionSchema.shape.params },
-    responses: createApiResponse(PrescriptionSchema, 'Success'),
-  });
-
-  router.delete('/:id', validateRequest(GetPrescriptionSchema), async (req: Request, res: Response) => {
-    const id = parseInt(req.params.id as string, 10);
-    const serviceResponse = await prescriptionService.findById(id);
-    handleServiceResponse(serviceResponse, res);
-  });
   return router;
 })();

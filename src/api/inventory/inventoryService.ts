@@ -1,68 +1,76 @@
+import { Drug } from '@prisma/client';
 import { StatusCodes } from 'http-status-codes';
-import { string } from 'zod';
 
 import { inventoryRepository } from '@/api/inventory/inventoryRepository';
-import { Inventory } from '@/api/inventory/inventorySchema';
 import { ResponseStatus, ServiceResponse } from '@/common/models/serviceResponse';
 import { logger } from '@/server';
 
 export const inventoryService = {
-  // Retrieves all users from the database
-  findAll: async (id: string, name: string): Promise<ServiceResponse<Inventory[] | null>> => {
+  findMany: async (id: string | undefined, name: string | undefined): Promise<ServiceResponse<Drug[] | null>> => {
     try {
-      const inventory = await inventoryRepository.findAllAsync(id, name);
-      if (!inventory || inventory.length === 0) {
-        return new ServiceResponse(ResponseStatus.Success, 'No Inventory found', [], StatusCodes.NOT_FOUND);
+      let inventory: Drug[] | Drug | null;
+
+      if (id && name) {
+        inventory = await inventoryRepository.findAllAsync(id, name);
+      } else if (id) {
+        inventory = await inventoryRepository.findAllAsync(id, '');
+      } else if (name) {
+        inventory = await inventoryRepository.findAllAsync('', name);
+      } else {
+        inventory = await inventoryRepository.findAllAsync('', '');
       }
-      return new ServiceResponse<Inventory[]>(ResponseStatus.Success, 'Inventory found', inventory, StatusCodes.OK);
+
+      if (!inventory || (Array.isArray(inventory) && inventory.length === 0)) {
+        return new ServiceResponse(ResponseStatus.Success, 'No Inventory found', null, StatusCodes.NOT_FOUND);
+      }
+
+      return new ServiceResponse<Drug[]>(ResponseStatus.Success, 'Inventory found', inventory, StatusCodes.OK);
     } catch (ex) {
-      const errorMessage = `Error finding all inventory: $${(ex as Error).message}`;
+      const errorMessage = `Error finding inventory: ${(ex as Error).message}`;
       logger.error(errorMessage);
       return new ServiceResponse(ResponseStatus.Failed, errorMessage, null, StatusCodes.INTERNAL_SERVER_ERROR);
     }
   },
 
-  // Retrieves a single user by their ID
   create: async (
     name: string,
     description: string,
     quantity: number,
-    createdById: string,
+    createdById: any,
     price: number
-  ): Promise<ServiceResponse<Inventory | null>> => {
+  ): Promise<ServiceResponse<Drug | null>> => {
     try {
       const inventory = await inventoryRepository.createAsync(name, description, quantity, createdById, price);
-      return new ServiceResponse<Inventory>(
+      return new ServiceResponse<Drug>(
         ResponseStatus.Success,
         'Inventory successfully created',
         inventory,
         StatusCodes.OK
       );
     } catch (ex) {
-      const errorMessage = `Error creating inventory with the name ${name}:, ${(ex as Error).message}`;
+      const errorMessage = `Error creating inventory: ${(ex as Error).message}`;
       logger.error(errorMessage);
       return new ServiceResponse(ResponseStatus.Failed, errorMessage, null, StatusCodes.INTERNAL_SERVER_ERROR);
     }
   },
 
-  // Retrieves a single user by their ID
   updateById: async (
     name: string,
     description: string,
     quantity: number,
     price: number,
     drugId: string
-  ): Promise<ServiceResponse<Inventory | null>> => {
+  ): Promise<ServiceResponse<Drug | null>> => {
     try {
       const inventory = await inventoryRepository.updateAsync(name, description, quantity, price, drugId);
-      return new ServiceResponse<Inventory>(
+      return new ServiceResponse<Drug>(
         ResponseStatus.Success,
         'Inventory successfully updated',
         inventory,
         StatusCodes.OK
       );
     } catch (ex) {
-      const errorMessage = `Error updating inventory with the id ${drugId}:, ${(ex as Error).message}`;
+      const errorMessage = `Error updating inventory: ${(ex as Error).message}`;
       logger.error(errorMessage);
       return new ServiceResponse(ResponseStatus.Failed, errorMessage, null, StatusCodes.INTERNAL_SERVER_ERROR);
     }

@@ -1,10 +1,10 @@
 import { OpenAPIRegistry } from '@asteasolutions/zod-to-openapi';
 import express, { Request, Response, Router } from 'express';
-import { z } from 'zod';
+
 import { createUserResponseSchema, loginUserSchema, UserSchema } from '@/api/auth/authSchema';
 import { authService } from '@/api/auth/authService';
 import { createApiResponse } from '@/api-docs/openAPIResponseBuilders';
-import { handleServiceResponse, validateRequest } from '@/common/utils/httpHandlers';
+import { handleServiceResponse } from '@/common/utils/httpHandlers';
 
 export const authRegistry = new OpenAPIRegistry();
 

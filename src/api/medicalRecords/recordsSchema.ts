@@ -1,9 +1,6 @@
 import { extendZodWithOpenApi } from '@asteasolutions/zod-to-openapi';
 import { z } from 'zod';
 
-import { commonValidations } from '@/common/utils/commonValidation';
-import {PatientSchema} from "@/api/patients/patientSchema";
-
 extendZodWithOpenApi(z);
 
 export type Record = z.infer<typeof RecordSchema>;
