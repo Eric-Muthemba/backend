@@ -1,22 +1,32 @@
-FROM node:current-slim
+# Stage 1: Build the application
+FROM node:16-alpine AS build
 
-# Create app directory
 WORKDIR /usr/src/app
-
-# Copy package.json and package-lock.json
 COPY package*.json ./
-
-# Install app dependencies
 RUN npm ci
-
-# Bundle app source
 COPY . .
-
-# Build the TypeScript files
 RUN npm run build
 
-# Expose port 8080
+# Stage 2: Create the production image
+FROM node:16-alpine
+
+WORKDIR /usr/src/app
+
+
+# Install Prisma CLI for migrations and generating the client
+RUN npm install -g prisma
+
+# Copy only the necessary files from the build stage
+COPY --from=build /usr/src/app/package*.json ./
+COPY --from=build /usr/src/app/prisma ./prisma
+COPY --from=build /usr/src/app/dist ./dist
+
+# Install only production dependencies
+RUN npm ci --only=production
+
+# Run Prisma migrations and generate the Prisma client
+RUN prisma generate
+
 EXPOSE 8080
 
-# Start the app
-CMD npm run start
+CMD ["node", "dist/index.js"]
